@@ -15,7 +15,7 @@ export const updateRecipeList = (recipeList: Recipe[]) => {
 }
 
 export const updateContactList = (contactList: User[]) => {
-  return {type: UPDATE_RECIPE_LIST, payload: contactList}
+  return {type: UPDATE_CONTACT_LIST, payload: contactList}
 }
 
 export const updateSelectedRecipe = (selectedRecipe: Recipe) => {
@@ -84,6 +84,54 @@ export const deleteRecipe = (deletedId: string, currentRecipeList: Recipe[]) => 
   }
 }
 
-export const getAllUsers = () => {
-  return dataUsers;
-};
+export const getAllContact = (contactId?: string) => {
+    return (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
+      if (!contactId) {
+        let formattedContact: User[] = [];
+        dataUsers.forEach((contactRow: User) => {
+          formattedContact.push({
+            id: contactRow.id,
+            name: contactRow.name,
+            imageUrl: contactRow.imageUrl,
+            email: contactRow.email,
+            phone: contactRow.phone
+          })
+        })
+        dispatch(updateContactList(formattedContact));
+      } else {
+        let formattedContact: User[] = [];
+        dataUsers.forEach((contactRow: User) => {
+          if (contactRow.id === contactId) {
+            formattedContact.push({
+              id: contactRow.id,
+              name: contactRow.name,
+              imageUrl: contactRow.imageUrl,
+              email: contactRow.email,
+              phone: contactRow.phone
+            })
+          }
+        })
+        dispatch(updateSelectedContact(formattedContact[0]));
+      }
+    }
+  }
+;
+
+export const deleteContact = (deletedId: string, currentContactList: User[]) => {
+  return (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
+    let formattedContact: User[] = [];
+    currentContactList.forEach((contactRow: User) => {
+      if (contactRow.id !== deletedId) {
+        formattedContact.push({
+          id: contactRow.id,
+          name: contactRow.name,
+          imageUrl: contactRow.imageUrl,
+          email: contactRow.email,
+          phone: contactRow.phone
+        })
+      }
+    })
+    dispatch(updateContactList(formattedContact))
+    dispatch(updateDeletingContactStatus(true))
+  }
+}

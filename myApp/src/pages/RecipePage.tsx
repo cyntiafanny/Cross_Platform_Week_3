@@ -39,7 +39,7 @@ const RecipePage: React.FC<RecipePageProps> = (props: RecipePageProps) => {
 
   useEffect(() => {
     dispatch(getAllRecipes())
-  }, [dispatch]);
+  }, [dispatch, props.isDeletingRecipe]);
 
   useEffect(() => {
     if(props.isDeletingRecipe) {

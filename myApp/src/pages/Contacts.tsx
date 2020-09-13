@@ -1,79 +1,100 @@
 import React, {useEffect, useState} from "react";
-import {getAllUsers} from "../actions";
-import {User} from "../state";
+import {DataState, User} from "../state";
 import './Contacts.css'
 import {
   IonAvatar,
-  IonCard,
+  IonCol,
   IonContent,
-  IonHeader, IonIcon,
+  IonHeader,
+  IonIcon,
   IonImg,
   IonItem,
   IonLabel,
   IonPage,
+  IonText,
   IonTitle,
+  IonToast,
   IonToolbar
 } from "@ionic/react";
-import {initialDataState} from "../initialState";
-import { mailOutline, callOutline } from 'ionicons/icons';
+import {callOutline, mailOutline} from 'ionicons/icons';
+import {getAllContact, updateDeletingContactStatus} from "../actions";
+import {RouteComponentProps} from "react-router";
+import {ThunkDispatch} from "@reduxjs/toolkit";
+import {AnyAction} from "redux";
+import {connect} from "react-redux";
 
-const Contacts = () => {
-  const [currentContact, setCurrentContact] = useState(initialDataState.users);
+export interface ContactsPageProps extends RouteComponentProps<any> {
+  currentContact: User[];
+  dispatch: ThunkDispatch<DataState, {}, AnyAction>;
+  isDeletingContact: boolean;
+}
+
+const mapStateToProps = (state: DataState) => {
+  return {
+    currentContact: state.users,
+    isDeletingContact: state.isDeletingContact
+  }
+}
+
+const ContactsPage: React.FC<ContactsPageProps> = (props: ContactsPageProps) => {
+  const dispatch = props.dispatch;
+  const currentContact = props.currentContact;
+
+  const [toastDelete, setToastDelete] = useState(false);
 
   useEffect(() => {
-    setCurrentContact(getAllUsers())
-  }, []);
+    dispatch(getAllContact())
+  }, [dispatch, props.isDeletingContact]);
 
-  const renderData = (data: any) => {
-    let dataRow: JSX.Element[] = [];
-
-    data.forEach((singleData: string) => {
-      dataRow.push(
-        <IonLabel key={singleData} className='single-data-entry'>{singleData}</IonLabel>
-      )
-    })
-
-    return dataRow;
-  }
+  useEffect(() => {
+    if (props.isDeletingContact) {
+      setToastDelete(true)
+      dispatch(updateDeletingContactStatus(false))
+    }
+  }, [currentContact, dispatch, props.isDeletingContact])
 
   const renderContactList = () => {
     let contactRows: JSX.Element[] = [];
 
     currentContact.forEach((singleContact: User) => {
       contactRows.push(
-        <IonCard key={singleContact.id}>
-          <IonItem>
-            <IonAvatar>
-              <IonImg src={singleContact.imageUrl}/>
-            </IonAvatar>
-            <IonLabel className='name-contacts'>{singleContact.name}</IonLabel>
-          </IonItem>
-          <IonItem className='row-data'>
+        <IonItem key={singleContact.id} routerLink={`/contacts/${singleContact.id}`}>
+          <IonAvatar slot="start">
+            <IonImg src={singleContact.imageUrl}/>
+          </IonAvatar>
+          <IonLabel>{singleContact.name}</IonLabel>
+          <IonCol slot="end">
             <IonIcon className='ion-icon' icon={mailOutline}/>
-            {renderData(singleContact.email)}
-          </IonItem>
-          <IonItem className='row-data'>
+            <IonText>{singleContact.email.length}</IonText>
             <IonIcon className='ion-icon' icon={callOutline}/>
-            {renderData(singleContact.phone)}
-          </IonItem>
-        </IonCard>
+            <IonText>{singleContact.phone.length}</IonText>
+          </IonCol>
+        </IonItem>
       )
     })
     return contactRows;
   }
 
   return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>Contacts</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent fullscreen>
-        {renderContactList()}
-      </IonContent>
-    </IonPage>
+    <React.Fragment>
+      <IonPage>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Contacts</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent fullscreen>
+          {renderContactList()}
+        </IonContent>
+      </IonPage>
+      <IonToast
+        isOpen={toastDelete}
+        onDidDismiss={() => setToastDelete(false)}
+        message="Contact deleted."
+        duration={500}
+      />
+    </React.Fragment>
   );
 }
 
-export default Contacts;
+export default connect(mapStateToProps)(ContactsPage);
