@@ -1,0 +1,16 @@
+.name-contacts {
+    margin: 0 20px;
+}
+
+.ion-icon {
+    color: black;
+    margin-right: 15px;
+}
+
+.single-data-entry {
+    width: max-content;
+}
+
+.row-data {
+    justify-content: space-between;
+}
